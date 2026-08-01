@@ -82,7 +82,7 @@ export default function WorkspacePage() {
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
           <div className="bg-white rounded-xl border border-gray-200 p-3">
             <div className="font-semibold text-gray-700 mb-1">🔀 Model Gateway</div>
-            <p className="text-gray-500">Abstracción agnóstica de proveedor. Proveedor activo: <strong>mock</strong>. Agregá OpenAI, Anthropic u otros sin cambiar los agentes.</p>
+            <p className="text-gray-500">Abstracción agnóstica de proveedor. Soporta <strong>mock</strong> para desarrollo y <strong>OpenAI-compatible</strong> para modelos reales sin cambiar los agentes.</p>
           </div>
           <div className="bg-white rounded-xl border border-gray-200 p-3">
             <div className="font-semibold text-gray-700 mb-1">🤖 Agentes especializados</div>

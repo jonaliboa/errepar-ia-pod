@@ -4,8 +4,9 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
-import { ModelGateway, getDefaultGateway } from "@/gateway/index";
+import { ModelGateway } from "@/gateway/index";
 import { MockProvider } from "@/gateway/mock";
+import { OpenAIProvider } from "@/gateway/openai";
 import type { ModelProvider, ModelRequest, ModelResponse } from "@/gateway/types";
 
 describe("ModelGateway", () => {
@@ -98,5 +99,90 @@ describe("MockProvider", () => {
     });
     expect(response.inputTokens).toBeGreaterThan(0);
     expect(response.outputTokens).toBeGreaterThan(0);
+  });
+});
+
+describe("OpenAIProvider", () => {
+  const originalEnv = {
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    OPENAI_MODEL: process.env.OPENAI_MODEL,
+    OPENAI_BASE_URL: process.env.OPENAI_BASE_URL,
+  };
+
+  beforeEach(() => {
+    if (originalEnv.OPENAI_API_KEY === undefined) delete process.env.OPENAI_API_KEY;
+    else process.env.OPENAI_API_KEY = originalEnv.OPENAI_API_KEY;
+
+    if (originalEnv.OPENAI_MODEL === undefined) delete process.env.OPENAI_MODEL;
+    else process.env.OPENAI_MODEL = originalEnv.OPENAI_MODEL;
+
+    if (originalEnv.OPENAI_BASE_URL === undefined) delete process.env.OPENAI_BASE_URL;
+    else process.env.OPENAI_BASE_URL = originalEnv.OPENAI_BASE_URL;
+  });
+
+  it("throws when the API key is missing", async () => {
+    delete process.env.OPENAI_API_KEY;
+    const provider = new OpenAIProvider();
+    await expect(
+      provider.complete({
+        tenantId: "t1",
+        userId: "u1",
+        messages: [{ role: "user", content: "hola" }],
+      })
+    ).rejects.toThrow(/OPENAI_API_KEY/);
+  });
+
+  it("calls an OpenAI-compatible chat completions endpoint", async () => {
+    process.env.OPENAI_API_KEY = "test-key";
+    process.env.OPENAI_MODEL = "demo-model";
+    process.env.OPENAI_BASE_URL = "https://example.test/v1";
+
+    const originalFetch = global.fetch;
+    const fetchMock = async (input: RequestInfo | URL, init?: RequestInit) => {
+      expect(String(input)).toBe("https://example.test/v1/chat/completions");
+      expect(init?.method).toBe("POST");
+      const authHeader = String((init?.headers as Record<string, string>).Authorization);
+      expect(authHeader.split(" ")[0]).toBe("Bearer");
+      expect(authHeader.split(" ").length).toBe(2);
+
+      const body = JSON.parse(String(init?.body));
+      expect(body.model).toBe("demo-model");
+      expect(body.messages[0]).toEqual({
+        role: "system",
+        content: "Sistema de prueba",
+      });
+      expect(body.messages[1]).toEqual({
+        role: "user",
+        content: "consulta",
+      });
+
+      return new Response(
+        JSON.stringify({
+          choices: [{ message: { content: "Respuesta real" } }],
+          usage: { prompt_tokens: 12, completion_tokens: 4 },
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    };
+
+    global.fetch = fetchMock as typeof fetch;
+
+    try {
+      const provider = new OpenAIProvider();
+      const response = await provider.complete({
+        tenantId: "t1",
+        userId: "u1",
+        systemPrompt: "Sistema de prueba",
+        messages: [{ role: "user", content: "consulta" }],
+      });
+
+      expect(response.provider).toBe("openai");
+      expect(response.model).toBe("demo-model");
+      expect(response.content).toBe("Respuesta real");
+      expect(response.inputTokens).toBe(12);
+      expect(response.outputTokens).toBe(4);
+    } finally {
+      global.fetch = originalFetch;
+    }
   });
 });
