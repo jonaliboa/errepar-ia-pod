@@ -39,7 +39,7 @@ export class OpenRouterProvider implements ModelProvider {
   readonly id = "openrouter";
 
   get defaultModel(): string {
-    return process.env.OPENROUTER_MODEL ?? "google/gemma-3-4b-it:free";
+    return process.env.OPENROUTER_MODEL ?? "google/gemma-4-26b-a4b-it:free";
   }
 
   private get apiKey(): string | undefined {

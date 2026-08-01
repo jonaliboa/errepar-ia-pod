@@ -203,10 +203,10 @@ describe("OpenRouterProvider", () => {
     }
   });
 
-  it("uses google/gemma-3-4b-it:free as the default model", () => {
+  it("uses google/gemma-4-26b-a4b-it:free as the default model", () => {
     delete process.env.OPENROUTER_MODEL;
     const provider = new OpenRouterProvider();
-    expect(provider.defaultModel).toBe("google/gemma-3-4b-it:free");
+    expect(provider.defaultModel).toBe("google/gemma-4-26b-a4b-it:free");
   });
 
   it("throws when the API key is missing", async () => {
@@ -223,7 +223,7 @@ describe("OpenRouterProvider", () => {
 
   it("calls the OpenRouter chat completions endpoint with required headers", async () => {
     process.env.OPENROUTER_API_KEY = "test-key";
-    process.env.OPENROUTER_MODEL = "google/gemma-3-4b-it:free";
+    process.env.OPENROUTER_MODEL = "google/gemma-4-26b-a4b-it:free";
 
     const originalFetch = global.fetch;
     const fetchMock = async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -237,7 +237,7 @@ describe("OpenRouterProvider", () => {
       expect(headers["X-Title"]).toBeTruthy();
 
       const body = JSON.parse(String(init?.body));
-      expect(body.model).toBe("google/gemma-3-4b-it:free");
+      expect(body.model).toBe("google/gemma-4-26b-a4b-it:free");
       expect(body.messages[0]).toEqual({ role: "user", content: "consulta" });
 
       return new Response(
@@ -260,7 +260,7 @@ describe("OpenRouterProvider", () => {
       });
 
       expect(response.provider).toBe("openrouter");
-      expect(response.model).toBe("google/gemma-3-4b-it:free");
+      expect(response.model).toBe("google/gemma-4-26b-a4b-it:free");
       expect(response.content).toBe("Respuesta de Gemma");
       expect(response.inputTokens).toBe(10);
       expect(response.outputTokens).toBe(5);
