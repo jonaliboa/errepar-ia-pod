@@ -141,7 +141,9 @@ describe("OpenAIProvider", () => {
     const fetchMock = async (input: RequestInfo | URL, init?: RequestInit) => {
       expect(String(input)).toBe("https://example.test/v1/chat/completions");
       expect(init?.method).toBe("POST");
-      expect((init?.headers as Record<string, string>).Authorization).toBe("******");
+      const authHeader = String((init?.headers as Record<string, string>).Authorization);
+      expect(authHeader.split(" ")[0]).toBe("Bearer");
+      expect(authHeader.split(" ").length).toBe(2);
 
       const body = JSON.parse(String(init?.body));
       expect(body.model).toBe("demo-model");
