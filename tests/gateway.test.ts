@@ -7,6 +7,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { ModelGateway } from "@/gateway/index";
 import { MockProvider } from "@/gateway/mock";
 import { OpenAIProvider } from "@/gateway/openai";
+import { OpenRouterProvider } from "@/gateway/openrouter";
 import type { ModelProvider, ModelRequest, ModelResponse } from "@/gateway/types";
 
 describe("ModelGateway", () => {
@@ -184,5 +185,92 @@ describe("OpenAIProvider", () => {
     } finally {
       global.fetch = originalFetch;
     }
+  });
+});
+
+describe("OpenRouterProvider", () => {
+  const originalEnv = {
+    OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
+    OPENROUTER_MODEL: process.env.OPENROUTER_MODEL,
+    OPENROUTER_SITE_URL: process.env.OPENROUTER_SITE_URL,
+    OPENROUTER_SITE_NAME: process.env.OPENROUTER_SITE_NAME,
+  };
+
+  beforeEach(() => {
+    for (const [key, value] of Object.entries(originalEnv)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  });
+
+  it("uses google/gemma-4-26b-a4b-it:free as the default model", () => {
+    delete process.env.OPENROUTER_MODEL;
+    const provider = new OpenRouterProvider();
+    expect(provider.defaultModel).toBe("google/gemma-4-26b-a4b-it:free");
+  });
+
+  it("throws when the API key is missing", async () => {
+    delete process.env.OPENROUTER_API_KEY;
+    const provider = new OpenRouterProvider();
+    await expect(
+      provider.complete({
+        tenantId: "t1",
+        userId: "u1",
+        messages: [{ role: "user", content: "hola" }],
+      })
+    ).rejects.toThrow(/OPENROUTER_API_KEY/);
+  });
+
+  it("calls the OpenRouter chat completions endpoint with required headers", async () => {
+    process.env.OPENROUTER_API_KEY = "test-key";
+    process.env.OPENROUTER_MODEL = "google/gemma-4-26b-a4b-it:free";
+
+    const originalFetch = global.fetch;
+    const fetchMock = async (input: RequestInfo | URL, init?: RequestInit) => {
+      expect(String(input)).toBe("https://openrouter.ai/api/v1/chat/completions");
+      expect(init?.method).toBe("POST");
+      const headers = init?.headers as Record<string, string>;
+      const authHeader = String(headers["Authorization"]);
+      expect(authHeader.startsWith("Bearer ")).toBe(true);
+      expect(authHeader.split(" ").length).toBe(2);
+      expect(headers["HTTP-Referer"]).toBeTruthy();
+      expect(headers["X-Title"]).toBeTruthy();
+
+      const body = JSON.parse(String(init?.body));
+      expect(body.model).toBe("google/gemma-4-26b-a4b-it:free");
+      expect(body.messages[0]).toEqual({ role: "user", content: "consulta" });
+
+      return new Response(
+        JSON.stringify({
+          choices: [{ message: { content: "Respuesta de Gemma" } }],
+          usage: { prompt_tokens: 10, completion_tokens: 5 },
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
+    };
+
+    global.fetch = fetchMock as typeof fetch;
+
+    try {
+      const provider = new OpenRouterProvider();
+      const response = await provider.complete({
+        tenantId: "t1",
+        userId: "u1",
+        messages: [{ role: "user", content: "consulta" }],
+      });
+
+      expect(response.provider).toBe("openrouter");
+      expect(response.model).toBe("google/gemma-4-26b-a4b-it:free");
+      expect(response.content).toBe("Respuesta de Gemma");
+      expect(response.inputTokens).toBe(10);
+      expect(response.outputTokens).toBe(5);
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
+  it("is registered in the gateway and selectable by id", () => {
+    const gw = new ModelGateway("openrouter");
+    expect(gw.providerId).toBe("openrouter");
   });
 });

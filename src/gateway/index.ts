@@ -14,6 +14,7 @@
 import type { ModelProvider, ModelRequest, ModelResponse } from "./types";
 import { MockProvider } from "./mock";
 import { OpenAIProvider } from "./openai";
+import { OpenRouterProvider } from "./openrouter";
 
 // ---------------------------------------------------------------------------
 // Provider registry
@@ -22,6 +23,7 @@ import { OpenAIProvider } from "./openai";
 const PROVIDERS: Record<string, ModelProvider> = {
   mock: new MockProvider(),
   openai: new OpenAIProvider(),
+  openrouter: new OpenRouterProvider(),
   // anthropic: new AnthropicProvider(),
 };
 
