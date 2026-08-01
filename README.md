@@ -48,9 +48,12 @@ npm run build && npm start
 
 | Variable | Valores posibles | Default | Descripción |
 |---|---|---|---|
-| `GATEWAY_PROVIDER` | `mock`, `openai`, `anthropic` | `mock` | Proveedor de modelo activo |
+| `GATEWAY_PROVIDER` | `mock`, `openai` | `mock` | Proveedor de modelo activo |
+| `OPENAI_API_KEY` | API key válida | — | Requerida para el proveedor real |
+| `OPENAI_MODEL` | `gpt-4o-mini`, `google/gemma-3-4b-it:free`, etc. | `gpt-4o-mini` | Modelo a invocar |
+| `OPENAI_BASE_URL` | URL OpenAI-compatible | `https://api.openai.com/v1` | Permite usar OpenAI, OpenRouter, Groq, etc. |
 
-Para el prototipo **no se necesitan credenciales**. El proveedor `mock` responde determinísticamente sin conexión a ningún servicio externo.
+Para el prototipo **no se necesitan credenciales** si se usa `mock`. Si se configura `openai`, el sistema usa un endpoint **OpenAI-compatible** real del lado del servidor.
 
 ---
 
@@ -65,6 +68,7 @@ src/
 ├── gateway/
 │   ├── types.ts        ← Interfaz ModelProvider (agnóstica de proveedor)
 │   ├── mock.ts         ← MockProvider: respuestas determinísticas, sin credenciales
+│   ├── openai.ts       ← OpenAIProvider: integración real con APIs OpenAI-compatible
 │   └── index.ts        ← ModelGateway: selección y despacho al proveedor configurado
 │
 ├── agents/
@@ -104,7 +108,7 @@ Usuario → UI (AgentSelector + ChatInterface)
     → AgentRouter.get(agentType)
       → Agent.handle(context)
         → ModelGateway.complete(request)
-          → Provider.complete()   ← mock | openai | anthropic | …
+          → Provider.complete()   ← mock | openai | …
         ← ModelResponse
       ← AgentResponse (content + risk + sources + disclaimer)
     ← Message persistido en InMemoryStore
@@ -125,43 +129,35 @@ Tenant (organización Errepar)
 
 ---
 
-## Cómo agregar un proveedor de modelo real
+## Usar un modelo real
 
-1. Crear `src/gateway/openai.ts` (o `anthropic.ts`, etc.) implementando `ModelProvider`:
-
-```typescript
-import type { ModelProvider, ModelRequest, ModelResponse } from "./types";
-
-export class OpenAIProvider implements ModelProvider {
-  readonly id = "openai";
-  readonly defaultModel = "gpt-4o";
-
-  async complete(request: ModelRequest): Promise<ModelResponse> {
-    // Llamar a la API de OpenAI con request.messages y request.systemPrompt
-    // ...
-    return { content, provider: this.id, model: this.defaultModel, latencyMs };
-  }
-}
-```
-
-2. Registrarlo en `src/gateway/index.ts`:
-
-```typescript
-import { OpenAIProvider } from "./openai";
-
-const PROVIDERS: Record<string, ModelProvider> = {
-  mock: new MockProvider(),
-  openai: new OpenAIProvider(),   // ← agregar aquí
-};
-```
-
-3. Configurar la variable de entorno:
+1. Configurar OpenAI directamente:
 
 ```bash
 GATEWAY_PROVIDER=openai
+OPENAI_API_KEY=tu_api_key
+OPENAI_MODEL=gpt-4o-mini
 ```
 
-**Ningún código de agente ni de UI necesita cambiar.**
+2. Para demos, también podés usar un servicio OpenAI-compatible con free tier:
+
+```bash
+# Ejemplo OpenRouter
+GATEWAY_PROVIDER=openai
+OPENAI_API_KEY=tu_api_key
+OPENAI_BASE_URL=https://openrouter.ai/api/v1
+OPENAI_MODEL=google/gemma-3-4b-it:free
+```
+
+3. El resto del sistema no cambia: los agentes siguen llamando al mismo `ModelGateway`.
+
+## Cómo agregar otro proveedor de modelo real
+
+1. Crear `src/gateway/otro-proveedor.ts` implementando `ModelProvider`.
+2. Registrarlo en `src/gateway/index.ts`.
+3. Configurar sus variables de entorno.
+
+**Ningún código de agente necesita cambiar.**
 
 ---
 
