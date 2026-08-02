@@ -32,18 +32,18 @@ export default function AgentSelector({ selected, onChange, disabled }: Props) {
           onClick={() => onChange(type)}
           disabled={disabled}
           className={[
-            "flex items-start gap-3 px-4 py-3 rounded-lg border-2 text-left transition-all",
+            "flex items-start gap-3 px-4 py-3 rounded-2xl border text-left transition-all duration-200",
             "min-w-[200px] flex-1",
             selected === type
-              ? "border-blue-600 bg-blue-50 text-blue-900"
-              : "border-gray-200 bg-white text-gray-700 hover:border-blue-300",
+              ? "border-blue-400/70 bg-blue-500/12 text-blue-100 shadow-[0_0_24px_rgba(59,130,246,0.25)]"
+              : "border-slate-700/80 bg-slate-900/60 text-slate-200 hover:border-slate-500 hover:bg-slate-900",
             disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
           ].join(" ")}
         >
           <span className="text-2xl mt-0.5">{icon}</span>
           <div>
             <div className="font-semibold text-sm">{label}</div>
-            <div className="text-xs text-gray-500 mt-0.5">{description}</div>
+            <div className="text-xs text-slate-400 mt-0.5">{description}</div>
           </div>
         </button>
       ))}

@@ -112,19 +112,19 @@ export default function ChatInterface({
   return (
     <div className="flex flex-col h-full">
       {/* Messages area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 md:p-5 space-y-4">
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full text-center text-gray-400 py-16">
+          <div className="flex flex-col items-center justify-center h-full text-center text-slate-400 py-16 px-2">
             <div className="text-5xl mb-4">
               {agentType === "legal" ? "⚖️" : "📊"}
             </div>
-            <p className="text-lg font-medium text-gray-500">{agentLabel}</p>
-            <p className="text-sm mt-2 max-w-sm">
+            <p className="text-lg font-semibold text-slate-200 tracking-tight">{agentLabel}</p>
+            <p className="text-sm mt-2 max-w-sm text-slate-400 leading-relaxed">
               {agentType === "legal"
                 ? "Consultá sobre legislación, contratos, jurisprudencia o análisis normativo."
                 : "Consultá sobre impuestos, liquidaciones, normas contables o vencimientos."}
             </p>
-            <p className="text-xs mt-4 text-gray-300 italic max-w-sm">
+            <p className="text-xs mt-4 text-slate-500 italic max-w-sm">
               Demo – las respuestas son orientativas y no constituyen asesoramiento profesional.
             </p>
           </div>
@@ -143,19 +143,19 @@ export default function ChatInterface({
 
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-gray-50 border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-3">
+            <div className="bg-slate-900/80 border border-slate-700/80 rounded-2xl rounded-tl-sm px-4 py-3">
               <div className="flex gap-1 items-center">
-                <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" />
-                <span className="text-xs text-gray-400 ml-2">{agentLabel} procesando…</span>
+                <span className="w-2 h-2 bg-sky-400 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                <span className="w-2 h-2 bg-sky-400 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                <span className="w-2 h-2 bg-sky-400 rounded-full animate-bounce" />
+                <span className="text-xs text-slate-400 ml-2">{agentLabel} procesando…</span>
               </div>
             </div>
           </div>
         )}
 
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+          <div className="bg-red-500/10 border border-red-400/30 rounded-xl px-4 py-3 text-sm text-red-200">
             ⚠️ {error}
           </div>
         )}
@@ -164,7 +164,7 @@ export default function ChatInterface({
       </div>
 
       {/* Composer */}
-      <div className="border-t border-gray-200 p-4">
+      <div className="border-t border-slate-800/80 p-4 bg-slate-950/35">
         <div className="flex gap-2 items-end">
           <textarea
             value={input}
@@ -173,17 +173,17 @@ export default function ChatInterface({
             placeholder={`Consultá al ${agentLabel}…`}
             rows={3}
             disabled={loading}
-            className="flex-1 resize-none rounded-xl border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
+            className="flex-1 resize-none rounded-2xl border border-slate-700 bg-slate-900/80 px-3 py-2.5 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-400/60 disabled:opacity-50"
           />
           <button
             onClick={handleSend}
             disabled={loading || !input.trim()}
-            className="px-4 py-2 bg-blue-600 text-white rounded-xl font-medium text-sm hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors self-end"
+            className="px-4 py-2.5 bg-gradient-to-r from-sky-500 to-blue-600 text-white rounded-xl font-semibold text-sm hover:from-sky-400 hover:to-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all self-end shadow-[0_10px_24px_rgba(59,130,246,0.3)]"
           >
             {loading ? "…" : "Enviar"}
           </button>
         </div>
-        <p className="text-[10px] text-gray-300 mt-1">
+        <p className="text-[10px] text-slate-500 mt-2">
           Enter para enviar · Shift+Enter para nueva línea
         </p>
       </div>

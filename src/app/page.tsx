@@ -23,49 +23,49 @@ export default function WorkspacePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen flex flex-col text-slate-100">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+      <header className="sticky top-0 z-20 backdrop-blur-xl bg-slate-950/55 border-b border-slate-800/80 px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-700 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+          <div className="w-9 h-9 bg-gradient-to-br from-sky-500 to-blue-600 rounded-xl flex items-center justify-center text-white font-bold text-sm shadow-[0_0_24px_rgba(59,130,246,0.45)]">
             E
           </div>
           <div>
-            <span className="font-semibold text-gray-900">IA Pod Errepar</span>
-            <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
+            <span className="font-semibold text-slate-100 tracking-tight">IA Pod Errepar</span>
+            <span className="ml-2 text-[10px] bg-blue-500/15 text-blue-300 border border-blue-400/20 px-2 py-0.5 rounded-full font-semibold uppercase tracking-wide">
               DEMO
             </span>
           </div>
         </div>
-        <div className="text-xs text-gray-400">
+        <div className="text-xs text-slate-400">
           {DEMO_USER.name} · {DEMO_WORKSPACE.name}
         </div>
       </header>
 
       {/* Demo disclaimer banner */}
-      <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-xs text-amber-800 text-center">
+      <div className="bg-amber-500/10 border-b border-amber-300/20 px-4 py-2 text-xs text-amber-200/90 text-center">
         ⚠️ <strong>SOLO DEMOSTRACIÓN</strong> – Este prototipo usa respuestas de ejemplo y no
         constituye asesoramiento legal ni contable. No tome decisiones profesionales basándose en
         este contenido.
       </div>
 
-      <main className="flex-1 flex flex-col max-w-4xl mx-auto w-full p-4 gap-4">
+      <main className="flex-1 flex flex-col max-w-5xl mx-auto w-full p-4 md:p-6 gap-4 md:gap-6">
         {/* Agent selector */}
         <section>
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">
+          <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-[0.2em] mb-3">
             Seleccionar agente
           </h2>
           <AgentSelector selected={agentType} onChange={handleAgentChange} />
         </section>
 
         {/* Chat workspace */}
-        <section className="flex-1 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col min-h-[500px]">
-          <div className="border-b border-gray-100 px-4 py-2 flex items-center gap-2">
-            <span className="text-sm font-medium text-gray-600">
+        <section className="flex-1 bg-slate-950/45 rounded-3xl border border-slate-800/80 shadow-[0_16px_80px_rgba(2,6,23,0.5)] overflow-hidden flex flex-col min-h-[520px] backdrop-blur-xl">
+          <div className="border-b border-slate-800/80 px-4 py-3 flex items-center gap-2">
+            <span className="text-sm font-medium text-slate-200">
               {agentType === "legal" ? "⚖️ Agente Legal" : "📊 Agente Contable"}
             </span>
-            <span className="text-xs text-gray-300">|</span>
-            <span className="text-xs text-gray-400">Respuestas fundamentadas con fuentes Errepar</span>
+            <span className="text-xs text-slate-600">|</span>
+            <span className="text-xs text-slate-400">Respuestas fundamentadas con fuentes Errepar</span>
           </div>
           <div className="flex-1 overflow-hidden flex flex-col">
             <ChatInterface
@@ -80,22 +80,22 @@ export default function WorkspacePage() {
 
         {/* Architecture info */}
         <section className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-          <div className="bg-white rounded-xl border border-gray-200 p-3">
-            <div className="font-semibold text-gray-700 mb-1">🔀 Model Gateway</div>
-            <p className="text-gray-500">Abstracción agnóstica de proveedor. Soporta <strong>mock</strong> para desarrollo y <strong>OpenAI-compatible</strong> para modelos reales sin cambiar los agentes.</p>
+          <div className="bg-slate-900/55 rounded-2xl border border-slate-800/80 p-4">
+            <div className="font-semibold text-slate-100 mb-1">🔀 Model Gateway</div>
+            <p className="text-slate-400">Abstracción agnóstica de proveedor. Soporta <strong>mock</strong> para desarrollo y <strong>OpenAI-compatible</strong> para modelos reales sin cambiar los agentes.</p>
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 p-3">
-            <div className="font-semibold text-gray-700 mb-1">🤖 Agentes especializados</div>
-            <p className="text-gray-500">Cada agente tiene su prompt, schema de riesgo y fuentes independientes. Escalable a N agentes.</p>
+          <div className="bg-slate-900/55 rounded-2xl border border-slate-800/80 p-4">
+            <div className="font-semibold text-slate-100 mb-1">🤖 Agentes especializados</div>
+            <p className="text-slate-400">Cada agente tiene su prompt, schema de riesgo y fuentes independientes. Escalable a N agentes.</p>
           </div>
-          <div className="bg-white rounded-xl border border-gray-200 p-3">
-            <div className="font-semibold text-gray-700 mb-1">👥 Multi-tenant</div>
-            <p className="text-gray-500">Tenant → Usuario → Workspace → Conversación. Listo para 1 000+ suscriptores Errepar con aislamiento por organización.</p>
+          <div className="bg-slate-900/55 rounded-2xl border border-slate-800/80 p-4">
+            <div className="font-semibold text-slate-100 mb-1">👥 Multi-tenant</div>
+            <p className="text-slate-400">Tenant → Usuario → Workspace → Conversación. Listo para 1 000+ suscriptores Errepar con aislamiento por organización.</p>
           </div>
         </section>
       </main>
 
-      <footer className="text-center text-xs text-gray-300 py-4">
+      <footer className="text-center text-xs text-slate-500 py-5">
         IA Pod Errepar · Prototipo v0.1 · Solo demostración – no asesoramiento profesional
       </footer>
     </div>

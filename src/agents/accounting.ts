@@ -12,6 +12,7 @@ import type { Agent, AgentContext, AgentResponse } from "./types";
 import { buildModelRequest } from "./types";
 import type { Source } from "@/domain/types";
 import type { ModelGateway } from "@/gateway";
+import { buildKnowledgeContext, getKnowledgeSnippets } from "@/lib/knowledgeBase";
 
 const ACCOUNTING_SYSTEM_PROMPT = `Sos un agente contable especializado del IA Pod Errepar.
 Tu función es asistir a contadores y profesionales de las finanzas con consultas sobre:
@@ -78,13 +79,32 @@ export class AccountingAgent implements Agent {
   constructor(private readonly gateway: ModelGateway) {}
 
   async handle(context: AgentContext): Promise<AgentResponse> {
-    const request = buildModelRequest(context, ACCOUNTING_SYSTEM_PROMPT, "accounting");
-    const raw = await this.gateway.complete(request);
+    const snippets = await getKnowledgeSnippets(context.userMessage, 3);
+    const knowledgeContext = buildKnowledgeContext(snippets);
+    const promptWithKnowledge = knowledgeContext
+      ? `${ACCOUNTING_SYSTEM_PROMPT}\n\n${knowledgeContext}`
+      : ACCOUNTING_SYSTEM_PROMPT;
+
+    const request = buildModelRequest(context, promptWithKnowledge, "accounting");
+    const rawProvider = await this.gateway.complete(request);
+    const fallbackContent = snippets
+      .map((snippet, index) => `${index + 1}. ${snippet.excerpt}`)
+      .join("\n\n");
+    const finalContent =
+      rawProvider.provider === "mock" && fallbackContent
+        ? `Resumen basado en BDTest.txt:\n\n${fallbackContent}`
+        : rawProvider.content;
+    const raw = { ...rawProvider, content: finalContent };
 
     const riskLevel = classifyRisk(raw.content);
     const confidence = computeConfidence(raw.content);
     const reviewRecommended = riskLevel === "high" || confidence < 0.7;
     const reviewStatus = reviewRecommended ? "pending" : "not_required";
+    const dynamicSources: Source[] = snippets.map((snippet) => ({
+      title: snippet.title,
+      reference: snippet.reference,
+      type: "regulation",
+    }));
 
     return {
       content: raw.content,
@@ -96,7 +116,7 @@ export class AccountingAgent implements Agent {
       riskLevel,
       reviewRecommended,
       reviewStatus,
-      sources: MOCK_ACCOUNTING_SOURCES,
+      sources: dynamicSources.length > 0 ? dynamicSources : MOCK_ACCOUNTING_SOURCES,
       disclaimer:
         "⚠️ SOLO DEMOSTRACIÓN – Este contenido no constituye asesoramiento contable ni impositivo profesional. Consulte a un contador habilitado para su caso particular.",
       raw,
